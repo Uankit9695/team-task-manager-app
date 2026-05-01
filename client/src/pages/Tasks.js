@@ -4,9 +4,12 @@ import API from "../services/api";
 function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [assignedTo, setAssignedTo] = useState([]); // 🔥 MULTI USER STATE
+  const [assignedTo, setAssignedTo] = useState([]);
+  const [project, setProject] = useState(""); // 🔥 NEW
 
   const loadTasks = () => {
     API.get("/tasks").then(res => setTasks(res.data));
@@ -15,24 +18,27 @@ function Tasks() {
   useEffect(() => {
     loadTasks();
 
-    API.get("/users")
-      .then(res => setUsers(res.data))
-      .catch(() => {});
+    API.get("/users").then(res => setUsers(res.data));
+    API.get("/projects").then(res => setProjects(res.data)); // 🔥 LOAD PROJECTS
   }, []);
 
-  // 🔥 CREATE TASK WITH MULTIPLE USERS
+  // 🔥 CREATE TASK
   const createTask = () => {
-    if (!title) return alert("Enter title");
+    if (!title || !project) {
+      return alert("Title and Project required");
+    }
 
     API.post("/tasks", {
       title,
       description,
-      assignedTo, // 🔥 IMPORTANT
+      project,        // 🔥 IMPORTANT
+      assignedTo,
       status: "Todo"
     }).then(() => {
       setTitle("");
       setDescription("");
       setAssignedTo([]);
+      setProject("");
       loadTasks();
     });
   };
@@ -41,7 +47,6 @@ function Tasks() {
     API.put(`/tasks/${id}`, { status }).then(loadTasks);
   };
 
-  // 🔥 MULTIPLE USER ASSIGN UPDATE
   const assignUsers = (id, selectedUsers) => {
     API.put(`/tasks/${id}`, { assignedTo: selectedUsers }).then(loadTasks);
   };
@@ -75,6 +80,18 @@ function Tasks() {
           onChange={(e)=>setDescription(e.target.value)}
         />
 
+        {/* 🔥 PROJECT SELECT */}
+        <select
+          value={project}
+          onChange={(e) => setProject(e.target.value)}
+          className="border p-2 mr-2 rounded"
+        >
+          <option value="">Select Project</option>
+          {projects.map(p => (
+            <option key={p._id} value={p._id}>{p.title}</option>
+          ))}
+        </select>
+
         {/* 🔥 MULTI USER SELECT */}
         <select
           multiple
@@ -105,7 +122,12 @@ function Tasks() {
             <h3 className="text-xl font-bold">{task.title}</h3>
             <p className="text-gray-600">{task.description}</p>
 
-            {/* 🔥 SHOW ASSIGNED USERS */}
+            {/* 🔥 SHOW PROJECT */}
+            <p className="text-sm text-blue-500">
+              Project: {task.project?.title || "N/A"}
+            </p>
+
+            {/* 🔥 SHOW USERS */}
             <p className="text-sm text-gray-500 mt-2">
               Assigned: {task.assignedTo?.length > 0
                 ? task.assignedTo.map(u => u.name).join(", ")
@@ -128,23 +150,21 @@ function Tasks() {
               </select>
             </div>
 
-            {/* 🔥 MULTI USER ASSIGN */}
-            {users.length > 0 && (
-              <select
-                multiple
-                onChange={(e) => {
-                  const selected = Array.from(e.target.selectedOptions, o => o.value);
-                  assignUsers(task._id, selected);
-                }}
-                className="border mt-3 p-2 rounded w-full"
-              >
-                {users.map(u => (
-                  <option key={u._id} value={u._id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            {/* 🔥 ASSIGN USERS */}
+            <select
+              multiple
+              onChange={(e) => {
+                const selected = Array.from(e.target.selectedOptions, o => o.value);
+                assignUsers(task._id, selected);
+              }}
+              className="border mt-3 p-2 rounded w-full"
+            >
+              {users.map(u => (
+                <option key={u._id} value={u._id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
 
           </div>
         ))}

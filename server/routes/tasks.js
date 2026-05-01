@@ -1,15 +1,28 @@
 const express = require("express");
 const router = express.Router();
 const Task = require("../models/Task");
-const { protect } = require("../middleware/auth"); // 🔥 isAdmin हटाया
+const { protect } = require("../middleware/auth");
 
 // 🔹 Create Task
 router.post("/", protect, async (req, res) => {
   try {
-    const task = await Task.create(req.body);
+    const { title, project, assignedTo } = req.body;
+
+    // 🔥 VALIDATION
+    if (!title || !project) {
+      return res.status(400).json("Title and Project are required");
+    }
+
+    const task = await Task.create({
+      title,
+      project,
+      assignedTo: assignedTo || []
+    });
+
     res.json(task);
   } catch (err) {
-    res.status(500).json(err);
+    console.log("TASK CREATE ERROR:", err);  // 🔥 important
+    res.status(500).json(err.message);
   }
 });
 
@@ -22,7 +35,8 @@ router.get("/", protect, async (req, res) => {
 
     res.json(tasks);
   } catch (err) {
-    res.status(500).json(err);
+    console.log("GET TASK ERROR:", err);
+    res.status(500).json(err.message);
   }
 });
 
@@ -37,7 +51,8 @@ router.put("/:id", protect, async (req, res) => {
 
     res.json(updatedTask);
   } catch (err) {
-    res.status(500).json(err);
+    console.log("UPDATE TASK ERROR:", err);
+    res.status(500).json(err.message);
   }
 });
 
@@ -56,7 +71,8 @@ router.get("/dashboard", protect, async (req, res) => {
 
     res.json({ total, completed, pending, overdue });
   } catch (err) {
-    res.status(500).json(err);
+    console.log("DASHBOARD ERROR:", err);
+    res.status(500).json(err.message);
   }
 });
 
