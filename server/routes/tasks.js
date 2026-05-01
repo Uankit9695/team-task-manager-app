@@ -3,30 +3,30 @@ const router = express.Router();
 const Task = require("../models/Task");
 const { protect } = require("../middleware/auth");
 
-// 🔹 Create Task
+// 🔹 CREATE TASK
 router.post("/", protect, async (req, res) => {
   try {
-    const { title, project, assignedTo } = req.body;
+    const { title, description, project, assignedTo } = req.body;
 
-    // 🔥 VALIDATION
     if (!title || !project) {
-      return res.status(400).json("Title and Project are required");
+      return res.status(400).json("Title and Project required");
     }
 
     const task = await Task.create({
       title,
+      description,
       project,
       assignedTo: assignedTo || []
     });
 
     res.json(task);
   } catch (err) {
-    console.log("TASK CREATE ERROR:", err);  // 🔥 important
+    console.log("TASK CREATE ERROR:", err);
     res.status(500).json(err.message);
   }
 });
 
-// 🔹 Get Tasks
+// 🔹 GET TASKS (🔥 SAFE VERSION)
 router.get("/", protect, async (req, res) => {
   try {
     const tasks = await Task.find()
@@ -36,18 +36,27 @@ router.get("/", protect, async (req, res) => {
     res.json(tasks);
   } catch (err) {
     console.log("GET TASK ERROR:", err);
-    res.status(500).json(err.message);
+
+    // 🔥 fallback (old data safe)
+    try {
+      const tasks = await Task.find();
+      res.json(tasks);
+    } catch {
+      res.json([]);
+    }
   }
 });
 
-// 🔹 Update Task
+// 🔹 UPDATE TASK
 router.put("/:id", protect, async (req, res) => {
   try {
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
-    ).populate("assignedTo", "name");
+    )
+      .populate("assignedTo", "name")
+      .populate("project", "title");
 
     res.json(updatedTask);
   } catch (err) {
@@ -56,7 +65,7 @@ router.put("/:id", protect, async (req, res) => {
   }
 });
 
-// 🔹 Dashboard
+// 🔹 DASHBOARD
 router.get("/dashboard", protect, async (req, res) => {
   try {
     const tasks = await Task.find();

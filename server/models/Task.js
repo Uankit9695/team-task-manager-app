@@ -1,14 +1,16 @@
 const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
+
   description: String,
-  projectId: {
+
+  project: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Project"
+    ref: "Project",
+    required: true
   },
 
-  // 🔥 MULTIPLE USERS SUPPORT
   assignedTo: [
     {
       type: mongoose.Schema.Types.ObjectId,
