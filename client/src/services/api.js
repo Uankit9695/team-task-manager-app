@@ -1,14 +1,14 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL   // 🔥 ONLY ENV BASED
+  baseURL: "https://team-task-manager-app-1.onrender.com/api"  // 🔥 LIVE BACKEND
 });
 
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
 
   if (token) {
-    req.headers.Authorization = "Bearer " + token;
+    req.headers.Authorization = "Bearer " + token;  // 🔥 MUST
   }
 
   return req;
