@@ -5,8 +5,14 @@ A complete team task management web application where users can create projects,
 ---
 
 ## 🌐 Live Demo
-👉 Frontend: (Add your Vercel link here)  
-👉 Backend API: (Add your Railway link here)
+- working URL - https://team-task-manager-app-6tsc.vercel.app/
+
+- you can Signup 
+- or you can use below id:-
+- you can use email -admin123@gmail.com
+- Password -12345
+
+
 
 ---
 
