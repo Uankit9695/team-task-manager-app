@@ -6,9 +6,13 @@ function Login() {
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const res = await API.post("/auth/login", { email, password });
-    localStorage.setItem("token", res.data.token);
-    window.location.href = "/dashboard";
+    try {
+      const res = await API.post("/auth/login", { email, password });
+      localStorage.setItem("token", res.data.token);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      alert(err.response?.data || "Login failed");
+    }
   };
 
   return (
@@ -39,6 +43,14 @@ function Login() {
         >
           Login
         </button>
+
+        {/* 🔥 Signup Link */}
+        <p className="text-center text-sm mt-4">
+          Don’t have an account?{" "}
+          <a href="/register" className="text-indigo-600 font-semibold">
+            Signup
+          </a>
+        </p>
 
       </div>
     </div>
