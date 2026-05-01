@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Project = require("../models/Project");
-const { protect, isAdmin } = require("../middleware/auth");
+const { protect } = require("../middleware/auth"); // 🔥 isAdmin हटाया
 
 // 🔹 Create Project
-router.post("/", protect, isAdmin, async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     if (!req.body.title) {
       return res.status(400).json("Title required");
@@ -36,8 +36,8 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// 🔹 Add Multiple Members (FINAL)
-router.put("/:id/members", protect, isAdmin, async (req, res) => {
+// 🔹 Add Members
+router.put("/:id/members", protect, async (req, res) => {
   try {
     const { members } = req.body;
 
@@ -48,9 +48,9 @@ router.put("/:id/members", protect, isAdmin, async (req, res) => {
     const project = await Project.findByIdAndUpdate(
       req.params.id,
       {
-        $addToSet: { members: { $each: members } } // 🔥 MULTIPLE ADD
+        $addToSet: { members: { $each: members } }
       },
-      { returnDocument: "after" }
+      { new: true }
     ).populate("members", "name");
 
     res.json(project);
